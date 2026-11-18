@@ -1,0 +1,124 @@
+# ==========================================
+# 1. 操作系统与编辑器系统文件
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDE 与 编辑器配置
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea/
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# ==========================================
+# 2. 后端：Python (uv / Ruff / Pyright)
+# ==========================================
+backend/.venv/
+backend/venv/
+backend/ENV/
+backend/env/
+
+# Python 编译和缓存文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 静态检查、测试与覆盖率缓存
+.ruff_cache/
+.pyright/
+.pytest_cache/
+.mypy_cache/
+.tox/
+.nox/
+htmlcov/
+.coverage
+.coverage.*
+cache/
+cfiles/
+
+# ==========================================
+# 3. 前端：Node.js / React (pnpm / Vite)
+# ==========================================
+node_modules
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/tsconfig.tsbuildinfo
+
+# 前端日志与包管理器缓存
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ==========================================
+# 4. 基础设施 / 数据存储 (Docker, Milvus, Postgres)
+# ==========================================
+# 忽略 Postgres 初始数据挂载目录中的实际数据文件（保留 init 目录下的初始化脚本）
+deploy/postgres/data/
+deploy/postgres/pgdata/
+
+# 忽略 Milvus 运行时生成的数据、日志与挂载卷
+deploy/milvus/data/
+deploy/milvus/logs/
+
+# 通用 Docker 挂载数据
+**/data/raw/*
+!**/data/raw/.gitkeep
+data/db/
+*.sqlite3
+*.db
+
+# ==========================================
+# 5. 环境变量与机密信息 (Security Sensitive)
+# ==========================================
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+deploy/.env
+secrets/
+*.pem
+*.key
+
+# ==========================================
+# 6. Task / 自动化工具临时文件
+# ==========================================
+.task/
+task.log
+
+output
+NOTE.md

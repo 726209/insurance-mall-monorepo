@@ -1,0 +1,138 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  GREETING: Hello, world!
+
+silent: true
+
+tasks:
+  default:
+    cmds:
+      - task --list
+  hello:
+    desc: Print a greeting message
+    cmds:
+      - echo "{{.GREETING}}"
+
+  # ==================== 后端相关 (Python + uv) ====================
+  be:install:
+    dir: backend
+    cmds:
+      - uv sync
+    desc: "安装后端依赖 (uv)"
+
+  be:dev:
+    dir: backend
+    cmds:
+      - uv run uvicorn agent_service.main:app --reload --host 0.0.0.0 --port 8001
+    desc: "启动后端开发服务"
+
+  be:lint:
+    dir: backend
+    cmds:
+      - uv run ruff check .
+      - uv run ruff format --check .
+    desc: "运行后端代码风格与静态校验 (Ruff)"
+
+  be:fmt:
+    dir: backend
+    cmds:
+      - uv run ruff format .
+      - uv run ruff check --fix .
+    desc: "自动格式化后端代码 (Ruff)"
+
+  be:typecheck:
+    dir: backend
+    cmds:
+      - uv run pyright
+    desc: "运行 Pyright 静态类型检查"
+
+  be:check:
+    deps: [be:lint, be:typecheck]
+    desc: "【一键检查】运行后端所有静态检查（Lint + Format 检查 + Pyright 类型检查）"
+
+  # ==================== 前端相关 (React + pnpm) ====================
+  fe:install:
+    dir: frontend
+    cmds:
+      - pnpm install
+    desc: "安装前端依赖 (pnpm)"
+
+  fe:dev:
+    dir: frontend
+    cmds:
+      - pnpm dev
+    desc: "启动前端开发服务"
+
+  fe:build:
+    dir: frontend
+    cmds:
+      - pnpm build
+    desc: "构建前端生产环境代码"
+
+  fe:lint:
+    dir: frontend
+    cmds:
+      - pnpm lint
+    desc: "运行前端静态检查"
+
+  # ==================== 基础设施与全栈 ====================
+  infra:up:
+    dir: deploy
+    cmds:
+      - docker compose up -d
+    desc: "启动 Docker 基础组件 (Postgres, Milvus 等)"
+
+  infra:down:
+    dir: deploy
+    cmds:
+      - docker compose down
+    desc: "关闭 Docker 基础组件"
+
+  dev:
+    cmds:
+      - echo "请在不同终端分别运行:task infra:up, task be:dev, task fe:dev"
+    desc: "查看全栈开发指引"
+
+  # ==================== 发版与版本管理 ====================
+  release:plan:
+    cmds:
+      - pnpm changeset
+    desc: "1. 开发阶段：记录本次改动（生成 changeset 临时文件）"
+
+  release:bump:
+    cmds:
+      - pnpm version-packages
+      - echo "版本号已全部升级并同步至前后端！请执行 git status 检查。"
+    desc: "2. 发版阶段：自动升级前后端版本并生成 CHANGELOG"
+  # ==================== 安全检查 ====================
+  security:scan:
+    desc: "🔐 扫描 Git 暂存区中的敏感信息"
+    cmds:
+      - >-
+        gitleaks git
+        --pre-commit
+        --staged
+        --config .gitleaks.toml
+        --redact=100
+        --verbose
+
+  security:scan:all:
+    desc: "🔐 扫描完整 Git 历史"
+    cmds:
+      - >-
+        gitleaks git .
+        --config .gitleaks.toml
+        --redact=100
+        --verbose
+
+  security:scan:dir:
+    desc: "🔐 扫描当前工作目录"
+    cmds:
+      - >-
+        gitleaks dir .
+        --config .gitleaks.toml
+        --redact=100
+        --verbose

@@ -1,0 +1,9 @@
+# pnpm test
+
+set -e
+
+# 1. 检测暂存区敏感信息
+task security:scan
+
+# 2. 检查暂存代码
+# npx --no -- lint-staged

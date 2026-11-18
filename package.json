@@ -1,0 +1,32 @@
+{
+  "name": "insurance-mall-monorepo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"no test specified\"",
+    "commit": "git-cz",
+    "prepare": "husky",
+    "changeset": "changeset",
+    "version-packages": "changeset version && node scripts/sync-version.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@12.21.0",
+  "type": "module",
+  "devDependencies": {
+    "@changesets/cli": "^3.0.3",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "commitizen": "^4.3.2",
+    "cz-git": "^1.14.0",
+    "husky": "^9.1.7"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-git"
+    }
+  }
+}

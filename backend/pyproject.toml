@@ -1,0 +1,95 @@
+[project]
+name = "insurance-mall-backend"
+version = "1.0.0"
+description = "AI Insurance Customer Service System"
+readme = "README.md"
+authors = [
+    { name = "ioser", email = "iospai@qq.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "asyncpg>=0.32.0",
+    "dashscope>=2.1.0",
+    "fastapi[standard]>=0.162.5",
+    "ipykernel>=7.4.0",
+    "langchain>=1.5.0",
+    "langchain-community>=0.4.2",
+    "langchain-core>=1.8.0",
+    "langchain-deepseek>=1.1.1",
+    "langchain-mcp-adapters>=0.3.2",
+    "langchain-milvus>=0.4.0",
+    "langchain-mineru>=0.1.3",
+    "langchain-ollama>=1.1.0",
+    "langchain-text-splitters>=1.1.3",
+    "langgraph>=1.2.21",
+    "langgraph-checkpoint-postgres>=3.2.1",
+    "psycopg[binary,pool]>=3.3.9",
+    "pydantic-settings>=2.16.2",
+    "pymilvus>=3.0.3",
+    "pypdf>=7.1.0",
+    "rich>=15.0.0",
+    "sqlalchemy[asyncio]>=2.1.8",
+    "structlog>=26.1.0",
+]
+
+[project.scripts]
+agent-service = "agent_service:main"
+
+[build-system]
+requires = ["uv_build>=0.13.8,<0.14.0"]
+build-backend = "uv_build"
+
+#指定 Python 官方 PyPI 软件仓库的镜像地址——清华大学开源软件镜像站（TUNA）提供的 PyPI 简单索引（simple repository）接口。
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.414",
+    "ruff>=0.17.5",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort (自动排序导入)
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+]
+ignore = [
+    "E501", # 忽略行长度限制（交给 formatter 处理）
+    "BLE001", # 允许捕获宽泛的 Exception（适合大模型兜底等场景）
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+include = ["src"]
+exclude = [
+    "**/node_modules",
+    "**/__pycache__",
+    ".venv",
+    "build",
+    "dist",
+]
+
+# 根据你的实际 Python 版本调整（例如 3.10 或 3.11）
+pythonVersion = "3.14"
+pythonPlatform = "Linux"
+
+# 类型检查严格度模式：
+# 可选 "basic"（基础，适合快速上手及动态特性较多的框架）或 "standard" / "strict"
+# 建议先从 "basic" 开始，等类型标注完善后再提升严格度
+typeCheckingMode = "basic"
+
+# 忽略部分第三方库缺少类型提示带来的报错（如部分较老或动态性极强的库）
+reportMissingImports = true
+reportMissingTypeStubs = false
