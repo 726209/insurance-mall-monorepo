@@ -42,24 +42,24 @@ async def query_candidate_products(
         # return [ProductResponse.model_validate(product) for product in products]
         return jsonable_encoder(products)
 
-
-@tool
-async def retrieve_insurance_clause(query: str, k: int, product_id: int):
-    """查询指定保险产品的条款内容。
-
-    Args:
-        query: 需要从保险条款中查询的问题。
-        k: 返回的文档的数量
-        product_id: 保险产品ID。
-    """
-    from agent_service.rag import retriever
-
-    chunks = await retriever.retrieve(query, k, product_id)
-    if not chunks:
-        return "没有查询到相关保险条款。"
-    return "\n\n".join(
-        f"章节：{' > '.join(chunk.section_path)}\n内容：{chunk.content}" for chunk in chunks
-    )
+# 【废弃】使用 from agent_service.agents.tools import query_product_clause
+# @tool
+# async def retrieve_insurance_clause(query: str, k: int, product_id: int):
+#     """查询指定保险产品的条款内容。
+#
+#     Args:
+#         query: 需要从保险条款中查询的问题。
+#         k: 返回的文档的数量
+#         product_id: 保险产品ID。
+#     """
+#     from agent_service.rag import retriever
+#
+#     chunks = await retriever.retrieve(query, k, product_id)
+#     if not chunks:
+#         return "没有查询到相关保险条款。"
+#     return "\n\n".join(
+#         f"章节：{' > '.join(chunk.section_path)}\n内容：{chunk.content}" for chunk in chunks
+#     )
 
 
 @tool

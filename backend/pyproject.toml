@@ -1,6 +1,6 @@
 [project]
-name = "insurance-mall-backend"
-version = "1.0.0"
+name = "agent-service"
+version = "0.1.0"
 description = "AI Insurance Customer Service System"
 readme = "README.md"
 authors = [

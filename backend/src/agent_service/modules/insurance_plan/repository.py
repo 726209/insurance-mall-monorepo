@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from agent_service.modules.insurance_plan.models import InsurancePlan, InsurancePlanItem
 from agent_service.modules.insurance_plan.schemas import InsurancePlanCreate
+from agent_service.modules.user.models import User
 
 
 class InsurancePlanRepository:
@@ -20,6 +21,7 @@ class InsurancePlanRepository:
         ]
         annual_premium_budget = sum(item_budgets, Decimal("0")) if item_budgets else None
         # 2. 保存保险方案
+        _ = User  # 显式引用一次，防止被当成无用导入
         plan = InsurancePlan(
             user_id=user_id,
             plan_name=data.plan_name,

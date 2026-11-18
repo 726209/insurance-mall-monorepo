@@ -4,6 +4,19 @@
 
 from datetime import datetime
 
+from fastapi.encoders import jsonable_encoder
+from langchain_core.tools import tool
+from langgraph.config import get_stream_writer
+from langgraph.prebuilt import ToolRuntime
+
+from agent_service.agents.schemas import InsuranceAgentContext
+from agent_service.infra.database import AsyncSessionFactory
+from agent_service.modules.claim.models import Claim
+from agent_service.modules.claim.repository import ClaimRepository
+from agent_service.modules.policy.models import Policy
+from agent_service.modules.policy.repository import PolicyRepository
+from agent_service.modules.product.models import Product
+
 # ==================== 一、 常量标签映射字典 ====================
 # 用于将数据库中的英文状态码/类型码转换为前端或大模型易读的中文描述
 
@@ -61,147 +74,149 @@ def _format_dt(value: datetime | None) -> str | None:
     return value.isoformat() if value else None
 
 
-# def serialize_policy(policy: Policy, product: Product | None) -> dict:
-#     """将保单对象及关联的产品信息序列化为前端友好的标准字典结构"""
-#     return {
-#         "id": str(policy.id),
-#         "user_id": policy.user_id,
-#         "product_id": policy.product_id,
-#         "policy_number": policy.policy_number,
-#         "status": policy.status,
-#         "effective_at": _format_dt(policy.effective_at),
-#         "expires_at": _format_dt(policy.expires_at),
-#         "application_no": policy.application_no,
-#         "holder_name": policy.holder_name,
-#         "insured_name": policy.insured_name,
-#         "insured_phone": policy.insured_phone,
-#         "insured_id_no_masked": policy.insured_id_no_masked,
-#         "coverage_amount": policy.coverage_amount,
-#         "premium_amount": policy.premium_amount,
-#         "payment_frequency": policy.payment_frequency,
-#         "policy_snapshot": policy.policy_snapshot,
-#         "coverage_snapshot": policy.coverage_snapshot,
-#         # 若关联了产品信息，一并序列化
-#         "product": {
-#             "id": product.id,
-#             "name": product.name,
-#             "category": product.category,
-#             "image_url": product.image_url,
-#             "insurer": product.insurer,
-#         }
-#         if product
-#         else None,
-#     }
-#
-#
-# def serialize_claim(
-#     claim: Claim,
-#     policy: Policy | None,
-#     product: Product | None,
-# ) -> dict:
-#     """将理赔案件对象、关联保单及产品信息序列化为标准字典结构"""
-#     return {
-#         "id": str(claim.id),
-#         "claim_number": claim.claim_number,
-#         "claim_type": claim.claim_type,
-#         "claim_type_label": CLAIM_TYPE_LABEL.get(claim.claim_type, claim.claim_type),
-#         "amount": claim.amount,
-#         "description": claim.description,
-#         "status": claim.status,
-#         "status_label": CLAIM_STATUS_LABEL.get(claim.status, claim.status),
-#         "submitted_at": _format_dt(claim.submitted_at),
-#         "updated_at": _format_dt(claim.updated_at),
-#         "policy_number": policy.policy_number if policy else None,
-#         "product_name": product.name if product else None,
-#         "product_id": claim.product_id,
-#     }
-#
-#
-# # ==================== 三、 Agent 工具定义 (Tools) ====================
-#
-# @tool
-# async def query_user_policies(
-#     runtime: ToolRuntime[InsuranceAgentContext],
-#     policy_number: str | None = None,
-# ) -> list[dict]:
-#     """查询当前用户的保单列表或指定保单。用户询问我的保单、保障期间、保单号时使用。
-#
-#     Args:
-#         policy_number: 可选，精确匹配保单号。
-#     """
-#     # 1. 使用异步会话从数据库中查询用户的保单数据
-#     async with AsyncSessionFactory() as session:
-#         repository = PolicyRepository(session)
-#         if policy_number:
-#             # 按指定的保单号精准查询
-#             row = await repository.find_by_number(runtime.context.user_id, policy_number)
-#             rows = [row] if row else []
-#         else:
-#             # 查询该用户旗下的所有保单
-#             rows = await repository.list_by_user(runtime.context.user_id)
-#
-#     # 2. 序列化查询结果
-#     policies = [serialize_policy(policy, product) for policy, product in rows]
-#
-#     # 3. 利用 LangGraph 的 stream writer 向外推送结构化的侧边栏/附加业务数据 (additional_info)
-#     writer = get_stream_writer()
-#     writer({"type": "additional_info", "data": {"policies": policies}})
-#
-#     # 4. 若无数据则返回空列表，否则使用 fastapi 编码器序列化后返回给大模型
-#     if not policies:
-#         return []
-#     return jsonable_encoder(policies)
-#
-#
-# @tool
-# async def query_claim_progress(
-#     runtime: ToolRuntime[InsuranceAgentContext],
-#     claim_number: str | None = None,
-#     policy_number: str | None = None,
-# ) -> list[dict]:
-#     """查询当前用户的理赔进度。用户问理赔到哪一步、案件号、审核结果时使用。
-#
-#     Args:
-#         claim_number: 可选，理赔案件号，如 CLM-DEMO-2026-0001。
-#         policy_number: 可选，按保单号筛选理赔记录。
-#     """
-#     # 1. 异步查询理赔记录
-#     async with AsyncSessionFactory() as session:
-#         repository = ClaimRepository(session)
-#         rows = await repository.list_by_user(
-#             runtime.context.user_id,
-#             claim_number=claim_number,
-#             policy_number=policy_number,
-#         )
-#
-#     # 2. 序列化理赔案件列表
-#     claims = [
-#         serialize_claim(claim, policy, product)
-#         for claim, policy, product in rows
-#     ]
-#
-#     # 3. 提取理赔关联的保单，去重后同样通过 stream 推送给前端（方便前端在聊天气泡旁渲染保单卡片）
-#     related_policies = []
-#     seen: set[str] = set()
-#     for claim, policy, product in rows:
-#         if policy and str(policy.id) not in seen:
-#             seen.add(str(policy.id))
-#             related_policies.append(serialize_policy(policy, product))
-#
-#     if related_policies:
-#         writer = get_stream_writer()
-#         writer({"type": "additional_info", "data": {"policies": related_policies}})
-#
-#     return jsonable_encoder(claims)
-#
-#
-# @tool
-# def query_claim_guide(claim_type: str | None = None) -> str:
-#     """说明理赔流程、所需材料和注意事项。用户问怎么报案、要准备什么材料时使用。
-#
-#     Args:
-#         claim_type: 可选，medical / accident / critical_illness / life。
-#     """
-#     # 根据传入的险种类型匹配对应的理赔指南，未匹配到则退化为 general 通用指南
-#     key = claim_type if claim_type in CLAIM_GUIDES else "general"
-#     return CLAIM_GUIDES[key]
+def serialize_policy(policy: Policy, product: Product | None) -> dict:
+    """将保单对象及关联的产品信息序列化为前端友好的标准字典结构"""
+    return {
+        "id": str(policy.id),
+        "user_id": policy.user_id,
+        "product_id": policy.product_id,
+        "policy_number": policy.policy_number,
+        "status": policy.status,
+        "effective_at": _format_dt(policy.effective_at),
+        "expires_at": _format_dt(policy.expires_at),
+        "application_no": policy.application_no,
+        "holder_name": policy.holder_name,
+        "insured_name": policy.insured_name,
+        "insured_phone": policy.insured_phone,
+        "insured_id_no_masked": policy.insured_id_no_masked,
+        "coverage_amount": policy.coverage_amount,
+        "premium_amount": policy.premium_amount,
+        "payment_frequency": policy.payment_frequency,
+        "policy_snapshot": policy.policy_snapshot,
+        "coverage_snapshot": policy.coverage_snapshot,
+        # 若关联了产品信息，一并序列化
+        "product": {
+            "id": product.id,
+            "name": product.name,
+            "category": product.category,
+            "image_url": product.image_url,
+            "insurer": product.insurer,
+        }
+        if product
+        else None,
+    }
+
+
+def serialize_claim(
+    claim: Claim,
+    policy: Policy | None,
+    product: Product | None,
+) -> dict:
+    """将理赔案件对象、关联保单及产品信息序列化为标准字典结构"""
+    return {
+        "id": str(claim.id),
+        "claim_number": claim.claim_number,
+        "claim_type": claim.claim_type,
+        "claim_type_label": CLAIM_TYPE_LABEL.get(claim.claim_type, claim.claim_type),
+        "amount": claim.amount,
+        "description": claim.description,
+        "status": claim.status,
+        "status_label": CLAIM_STATUS_LABEL.get(claim.status, claim.status),
+        "submitted_at": _format_dt(claim.submitted_at),
+        "updated_at": _format_dt(claim.updated_at),
+        "policy_number": policy.policy_number if policy else None,
+        "product_name": product.name if product else None,
+        "product_id": claim.product_id,
+    }
+
+
+# ==================== 三、 Agent 工具定义 (Tools) ====================
+
+@tool
+async def query_user_policies(
+    runtime: ToolRuntime[InsuranceAgentContext],
+    policy_number: str | None = None,
+) -> list[dict]:
+    """查询当前用户的保单列表或指定保单。用户询问我的保单、保障期间、保单号时使用。
+
+    Args:
+        runtime: 工具运行时上下文，用于获取当前用户的身份信息。
+        policy_number: 可选，精确匹配保单号。
+    """
+    # 1. 使用异步会话从数据库中查询用户的保单数据
+    async with AsyncSessionFactory() as session:
+        repository = PolicyRepository(session)
+        if policy_number:
+            # 按指定的保单号精准查询
+            row = await repository.find_by_number(runtime.context.user_id, policy_number)
+            rows = [row] if row else []
+        else:
+            # 查询该用户旗下的所有保单
+            rows = await repository.list_by_user(runtime.context.user_id)
+
+    # 2. 序列化查询结果
+    policies = [serialize_policy(policy, product) for policy, product in rows]
+
+    # 3. 利用 LangGraph 的 stream writer 向外推送结构化的侧边栏/附加业务数据 (additional_info)
+    writer = get_stream_writer()
+    writer({"type": "additional_info", "data": {"policies": policies}})
+
+    # 4. 若无数据则返回空列表，否则使用 fastapi 编码器序列化后返回给大模型
+    if not policies:
+        return []
+    return jsonable_encoder(policies)
+
+
+@tool
+async def query_claim_progress(
+    runtime: ToolRuntime[InsuranceAgentContext],
+    claim_number: str | None = None,
+    policy_number: str | None = None,
+) -> list[dict]:
+    """查询当前用户的理赔进度。用户问理赔到哪一步、案件号、审核结果时使用。
+
+    Args:
+        runtime: 工具运行时上下文，用于获取当前用户的身份信息。
+        claim_number: 可选，理赔案件号，如 CLM-DEMO-2026-0001。
+        policy_number: 可选，按保单号筛选理赔记录。
+    """
+    # 1. 异步查询理赔记录
+    async with AsyncSessionFactory() as session:
+        repository = ClaimRepository(session)
+        rows = await repository.list_by_user(
+            runtime.context.user_id,
+            claim_number=claim_number,
+            policy_number=policy_number,
+        )
+
+    # 2. 序列化理赔案件列表
+    claims = [
+        serialize_claim(claim, policy, product)
+        for claim, policy, product in rows
+    ]
+
+    # 3. 提取理赔关联的保单，去重后同样通过 stream 推送给前端（方便前端在聊天气泡旁渲染保单卡片）
+    related_policies = []
+    seen: set[str] = set()
+    for claim, policy, product in rows:
+        if policy and str(policy.id) not in seen:
+            seen.add(str(policy.id))
+            related_policies.append(serialize_policy(policy, product))
+
+    if related_policies:
+        writer = get_stream_writer()
+        writer({"type": "additional_info", "data": {"policies": related_policies}})
+
+    return jsonable_encoder(claims)
+
+
+@tool
+def query_claim_guide(claim_type: str | None = None) -> str:
+    """说明理赔流程、所需材料和注意事项。用户问怎么报案、要准备什么材料时使用。
+
+    Args:
+        claim_type: 可选，medical / accident / critical_illness / life。
+    """
+    # 根据传入的险种类型匹配对应的理赔指南，未匹配到则退化为 general 通用指南
+    key: str = claim_type if claim_type and claim_type in CLAIM_GUIDES else "general"
+    return CLAIM_GUIDES[key]

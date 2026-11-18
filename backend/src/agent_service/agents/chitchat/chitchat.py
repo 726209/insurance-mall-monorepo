@@ -67,7 +67,7 @@ class ChitChatWorkflow:
             "chitchat_count": count + 1,
         }
 
-    def build_chitchat_graph(self):
+    def build(self):
         builder = StateGraph(ChitchatState)
 
         builder.add_node("chitchat", self.handle_chitchat)

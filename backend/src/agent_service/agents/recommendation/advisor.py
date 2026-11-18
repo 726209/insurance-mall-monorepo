@@ -4,11 +4,10 @@ from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 
 from agent_service.agents.recommendation.tools import (
-    query_candidate_products,
-    retrieve_insurance_clause,
-    save_insurance_plan,
+    save_insurance_plan, query_candidate_products,
 )
 from agent_service.agents.schemas import InsuranceAgentContext
+from agent_service.agents.tools import query_product_clause
 from agent_service.core.configs.config import settings
 from agent_service.core.logger.logger import get_logger
 
@@ -41,7 +40,7 @@ def init_insurance_advisor():
         model=model,
         tools=[
             query_candidate_products,
-            retrieve_insurance_clause,
+            query_product_clause,
             save_insurance_plan,
         ],
         checkpointer=True,

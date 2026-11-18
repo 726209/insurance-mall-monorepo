@@ -3,7 +3,9 @@
 from langchain.agents import create_agent
 from langchain.chat_models import init_chat_model
 
+from agent_service.agents.claim.tools import query_user_policies, query_claim_progress, query_claim_guide
 from agent_service.agents.schemas import InsuranceAgentContext
+from agent_service.agents.tools import query_product_clause
 from agent_service.core.configs.config import settings
 from agent_service.core.logger.logger import get_logger
 
@@ -24,20 +26,18 @@ SYSTEM_PROMPT = """
 
 def init_claim_advisor():
     """初始化理赔咨询子Agent"""
-    print("Initializing claim advisor...")
     model = init_chat_model(
         model=settings.llm.chat_model,
-        model_provider="deepseek",
         api_key=settings.llm.api_key,
         extra_body={"thinking": {"type": "disabled"}},
     )
     agent = create_agent(
         model=model,
         tools=[
-            # query_user_policies,
-            # query_claim_progress,
-            # query_claim_guide,
-            # query_product_clause,
+            query_user_policies,
+            query_claim_progress,
+            query_claim_guide,
+            query_product_clause,
         ],
         system_prompt=SYSTEM_PROMPT,
         context_schema=InsuranceAgentContext,

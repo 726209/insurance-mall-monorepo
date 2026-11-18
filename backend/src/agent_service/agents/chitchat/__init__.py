@@ -8,7 +8,7 @@ from agent_service.agents.chitchat.chitchat import ChitChatWorkflow
 
 
 def init_chitchat_workflow() -> CompiledStateGraph:
-    return ChitChatWorkflow().build_chitchat_graph()
+    return ChitChatWorkflow().build()
 
 
 __all__ = ["init_chitchat_workflow"]
