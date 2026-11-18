@@ -1,0 +1,322 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-18T18:51:26+08:00",
+  "repository_head": "9f642ef301971d5979376ab6cd068b5fb0f08155",
+  "has_uncommitted_changes": true,
+  "tool_versions": {
+    "gitleaks": "8.30.1",
+    "ruff": "0.17.5",
+    "pyright": "1.1.414",
+    "node": "v22.23.4",
+    "pnpm": "12.21.0",
+    "eslint": "9.39.5"
+  },
+  "publication": {
+    "redaction_percent": 100,
+    "raw_reports_published": false,
+    "includes_credential_values": false,
+    "includes_matching_source_fragments": false,
+    "includes_author_metadata": false,
+    "documentation_gitleaks_finding_count": 0
+  },
+  "security_scans": [
+    {
+      "name": "staged",
+      "scope": {
+        "kind": "git_staged_diff",
+        "command": "gitleaks git --pre-commit --staged --config .gitleaks.toml --redact=100",
+        "commits_scanned": 0,
+        "reported_bytes_scanned": 1838
+      },
+      "status": "passed",
+      "exit_code": 0,
+      "finding_count": 0,
+      "rule_counts": {},
+      "findings": []
+    },
+    {
+      "name": "history",
+      "scope": {
+        "kind": "local_git_history",
+        "command": "gitleaks git . --config .gitleaks.toml --redact=100",
+        "commits_scanned": 3,
+        "is_shallow_repository": false,
+        "reported_bytes_scanned": 2145717
+      },
+      "status": "findings",
+      "exit_code": 1,
+      "finding_count": 1,
+      "rule_counts": {
+        "generic-api-key": 1
+      },
+      "findings": [
+        {
+          "rule": "generic-api-key",
+          "file": "deploy/milvus/user.yaml",
+          "start_line": 3,
+          "end_line": 3,
+          "commit": "44465d8ecf7306de2625c99a6c3898cbfc2944fc"
+        }
+      ]
+    },
+    {
+      "name": "worktree",
+      "scope": {
+        "kind": "git_tracked_worktree_snapshot",
+        "file_count": 167,
+        "exported_bytes": 15066551,
+        "reported_bytes_scanned": 1036059,
+        "omitted_files": [],
+        "excludes": [
+          "untracked_files",
+          "ignored_files",
+          "local_env_files",
+          "dependency_directories",
+          "new_scan_documentation"
+        ]
+      },
+      "status": "findings",
+      "exit_code": 1,
+      "finding_count": 1,
+      "rule_counts": {
+        "generic-api-key": 1
+      },
+      "findings": [
+        {
+          "rule": "generic-api-key",
+          "file": "deploy/milvus/user.yaml",
+          "start_line": 3,
+          "end_line": 3
+        }
+      ]
+    }
+  ],
+  "static_checks": [
+    {
+      "name": "ruff_check",
+      "command": ".venv/bin/ruff check --no-cache --output-format json .",
+      "working_directory": "backend",
+      "status": "findings",
+      "exit_code": 1,
+      "finding_count": 16,
+      "rule_counts": {
+        "I001": 7,
+        "B007": 1,
+        "UP035": 1,
+        "F401": 7
+      },
+      "diagnostics": [
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/agents/claim/advisor.py",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "rule": "B007",
+          "file": "backend/src/agent_service/agents/claim/tools.py",
+          "line": 201,
+          "column": 9
+        },
+        {
+          "rule": "UP035",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 4,
+          "column": 30
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 6,
+          "column": 34
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 7,
+          "column": 44
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 9,
+          "column": 44
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 9,
+          "column": 63
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 10,
+          "column": 52
+        },
+        {
+          "rule": "F401",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 14,
+          "column": 38
+        },
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/agents/recommendation/advisor.py",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/agents/recommendation/tools.py",
+          "line": 4,
+          "column": 1
+        },
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/agents/tools.py",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/modules/claim/models.py",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "rule": "I001",
+          "file": "backend/src/agent_service/modules/policy/models.py",
+          "line": 2,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "name": "ruff_format_check",
+      "command": ".venv/bin/ruff format --check --no-cache .",
+      "working_directory": "backend",
+      "status": "formatting_required",
+      "exit_code": 1,
+      "files_requiring_formatting": 13,
+      "files_already_formatted": 75,
+      "files": [
+        "backend/src/agent_service/agents/chitchat/chitchat.py",
+        "backend/src/agent_service/agents/claim/advisor.py",
+        "backend/src/agent_service/agents/claim/tools.py",
+        "backend/src/agent_service/agents/orchestrator.py",
+        "backend/src/agent_service/agents/recommendation/advisor.py",
+        "backend/src/agent_service/agents/recommendation/tools.py",
+        "backend/src/agent_service/agents/tools.py",
+        "backend/src/agent_service/common/models.py",
+        "backend/src/agent_service/core/configs/config.py",
+        "backend/src/agent_service/modules/claim/models.py",
+        "backend/src/agent_service/modules/claim/repository.py",
+        "backend/src/agent_service/modules/policy/models.py",
+        "backend/src/agent_service/usage_mcp.py"
+      ]
+    },
+    {
+      "name": "pyright_project_interpreter",
+      "command": ".venv/bin/pyright --pythonpath .venv/bin/python --outputjson",
+      "working_directory": "backend",
+      "status": "findings",
+      "exit_code": 1,
+      "files_analyzed": 54,
+      "error_count": 7,
+      "warning_count": 0,
+      "rule_counts": {
+        "reportArgumentType": 4,
+        "reportAttributeAccessIssue": 3
+      },
+      "diagnostics": [
+        {
+          "rule": "reportArgumentType",
+          "severity": "error",
+          "file": "backend/src/agent_service/agents/chitchat/chitchat.py",
+          "line": 70
+        },
+        {
+          "rule": "reportAttributeAccessIssue",
+          "severity": "error",
+          "file": "backend/src/agent_service/agents/claim/tools.py",
+          "line": 151
+        },
+        {
+          "rule": "reportAttributeAccessIssue",
+          "severity": "error",
+          "file": "backend/src/agent_service/agents/claim/tools.py",
+          "line": 155
+        },
+        {
+          "rule": "reportAttributeAccessIssue",
+          "severity": "error",
+          "file": "backend/src/agent_service/agents/claim/tools.py",
+          "line": 187
+        },
+        {
+          "rule": "reportArgumentType",
+          "severity": "error",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 65
+        },
+        {
+          "rule": "reportArgumentType",
+          "severity": "error",
+          "file": "backend/src/agent_service/agents/orchestrator.py",
+          "line": 149
+        },
+        {
+          "rule": "reportArgumentType",
+          "severity": "error",
+          "file": "backend/src/agent_service/infra/checkpointer.py",
+          "line": 37
+        }
+      ]
+    },
+    {
+      "name": "pyright_initial_environment_probe",
+      "working_directory": "backend",
+      "status": "environment_import_errors",
+      "exit_code": 1,
+      "error_count": 118,
+      "warning_count": 1,
+      "note": "Initial direct invocation lacked the project interpreter; project-interpreter result is recorded separately."
+    },
+    {
+      "name": "frontend_lint",
+      "command": "pnpm lint",
+      "working_directory": "frontend",
+      "status": "configuration_error",
+      "exit_code": 2,
+      "reason": "ESLint 9 could not find eslint.config.js, eslint.config.mjs, or eslint.config.cjs."
+    },
+    {
+      "name": "frontend_build",
+      "working_directory": "frontend",
+      "status": "not_run",
+      "exit_code": null,
+      "existing_artifact": "frontend/dist/index.html",
+      "reason": "An existing build was present. Rebuild was explicitly excluded to avoid updating files outside backend. Existing output does not prove current source builds."
+    }
+  ],
+  "changes_made": [
+    "backend/docs/security/SCAN-RESULTS.md",
+    "backend/docs/security/scan-summary.json"
+  ],
+  "business_code_or_scan_configuration_modified": false,
+  "services_started_or_reset": false,
+  "credential_validity_tested": false
+}

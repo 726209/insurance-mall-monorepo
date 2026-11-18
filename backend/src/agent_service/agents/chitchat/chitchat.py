@@ -1,8 +1,11 @@
 # src/agent_service/agents/chitchat/chitchat.py
+from typing import Literal
 
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import AIMessage, SystemMessage
+from langgraph.constants import END, START
 from langgraph.graph import StateGraph
+from langgraph.types import Command
 
 from agent_service.agents.schemas import InsuranceAgentState
 from agent_service.core.configs.config import settings
@@ -29,6 +32,7 @@ class ChitchatState(InsuranceAgentState):
 
     chitchat_count: int  # 统计闲聊次数
 
+ChitchatNext = Literal["chitchat_reply", "__end__"]
 
 class ChitChatWorkflow:
     def __init__(self) -> None:
@@ -38,7 +42,10 @@ class ChitChatWorkflow:
             extra_body={"thinking": {"type": "disabled"}},
         )
 
-    def handle_chitchat(self, state: ChitchatState):
+    # 节点一：检查闲聊次数
+    def check_count(self, state: ChitchatState) -> Command[ChitchatNext]:
+        """检查次数，决定调用模型还是直接结束。"""
+
         # 取出State中的闲聊次数
         count = state.get("chitchat_count", 0)
 
@@ -50,18 +57,34 @@ class ChitChatWorkflow:
 
         # 判断count是否超出了闲聊的最大轮次
         if count >= MAX_CHITCHAT_COUNT:
-            logger.info("闲聊次数超出最大轮次，结束闲聊")
-            return {
-                "messages": [
-                    AIMessage(
-                        "我主要协助处理保险产品、投保和理赔咨询，请告诉我想办理或了解的事项。"
-                    )
-                ]
-            }
+            logger.info("闲聊次数达到上限，返回业务引导")
 
+            # 更新状态并直接结束，不再调用模型。
+            return Command[ChitchatNext](
+                update={
+                    "chitchat_count": count,
+                    "messages": [
+                        AIMessage(content="我主要协助处理保险产品、投保和理赔咨询，请告诉我想办理或了解的事项。")
+                    ],
+                },
+                goto=END,
+            )
         logger.debug(f"当前闲聊次数: {count}")
-        # 没超过闲聊最大轮次，可以正常对话
+        # 先保存重置后的计数，再进入回复节点。
+        return Command[ChitchatNext](
+            update={"chitchat_count": count},
+            goto="chitchat_reply",
+        )
+
+    # 节点二：生成闲聊回复
+    def handle_chitchat_reply(self, state: ChitchatState) -> dict:
+        """异步生成回复，成功后累计一次闲聊。"""
+
+        count = state.get("chitchat_count", 0)
+
         response = self._model.invoke([SystemMessage(SYSTEM_MESSAGE), *state["messages"]])
+
+        logger.debug("闲聊回复生成完成", chitchat_count=count + 1)
         return {
             "messages": [response],
             "chitchat_count": count + 1,
@@ -70,11 +93,14 @@ class ChitChatWorkflow:
     def build(self):
         builder = StateGraph(ChitchatState)
 
-        builder.add_node("chitchat", self.handle_chitchat)
+        builder.add_node("check_count", self.check_count)
+        builder.add_node("chitchat_reply", self.handle_chitchat_reply)
 
-        builder.set_entry_point("chitchat")  # START => chitchat
-        builder.set_finish_point("chitchat")  # chitchat => END
-        # builder.add_edge(START, "chitchat")
-        # builder.add_edge("chitchat", END)
+        # 入口先检查次数，模型回复后结束。
+        builder.add_edge(START, "check_count")
+        builder.add_edge("chitchat_reply", END)
+
+        # check_count 通过 Command 动态决定去向，
+        # 不再为它添加固定出边，避免两个分支同时执行。
 
         return builder.compile(checkpointer=True)

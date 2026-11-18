@@ -82,6 +82,12 @@ async def save_insurance_plan(
     async with AsyncSessionFactory() as session:
         service = InsurancePlanService(session)
         context_dict = cast(dict[str, Any], cast(object, runtime.context))
+        # 上下文已统一为 InsuranceAgentContext，直接读取属性。
+        #
+        # runtime.context.user_id
+        # AttributeError: 'dict' object has no attribute 'user_id'
+        #
+
         user_id = context_dict.get("user_id", 0)
         plan_id = await service.create_plan(
             user_id=user_id,

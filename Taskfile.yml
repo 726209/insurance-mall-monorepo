@@ -100,13 +100,27 @@ tasks:
   release:plan:
     cmds:
       - pnpm changeset
-    desc: "1. 开发阶段：记录本次改动（生成 changeset 临时文件）"
+    desc: "1. 记录改动：创建 Changeset 临时文件（开发/PR阶段）"
 
   release:bump:
     cmds:
       - pnpm version-packages
-      - echo "版本号已全部升级并同步至前后端！请执行 git status 检查。"
-    desc: "2. 发版阶段：自动升级前后端版本并生成 CHANGELOG"
+      - echo "✅ 版本号已全部升级并同步！请执行 'git status' 和 'git diff' 检查变更。"
+    desc: "2. 升级版本：消费 Changeset 升级 package.json 并生成 Changelog"
+
+  release:commit:
+    cmds:
+      - git add .
+      - git commit -m "chore(release):\ publish new versions"
+      - echo "✅ 版本变更已成功提交到本地 Git。"
+    desc: "3. 提交版本：将版本升级后的文件暂存并提交到本地"
+
+  release:publish:
+    cmds:
+      #- pnpm changeset publish
+      - git push origin main --follow-tags
+      - echo "🎉 发版成功！已将代码及 Git Tag 推送到远程仓库。"
+    desc: "4. 发布推送：将本地提交与 Git Tag 推送到远程"
   # ==================== 安全检查 ====================
   security:scan:
     desc: "🔐 扫描 Git 暂存区中的敏感信息"

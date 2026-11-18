@@ -6,9 +6,10 @@ from typing import Annotated, Any, Literal
 
 from langgraph.graph import MessagesState
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
-class InsuranceAgentContext(BaseModel):
+class InsuranceAgentContext(TypedDict):
     """保险顾问Agent运行时上下文"""
 
     user_id: int
@@ -46,10 +47,10 @@ def merge_additional_info(
 
 
 class InsuranceAgentState(MessagesState):
-    """保险顾问主Graph状态"""
+    """保险顾问主Graph状态：主图与子图共享的会话状态。"""
 
     active_workflow: Intent  # 本轮对话激活的工作流
-    previous_workflow: Intent  # 上一轮对话激活的工作流
+    previous_workflow: Intent | None  # 上一轮对话激活的工作流
     additional_info: Annotated[  # 记录AI回答中的引用来源信息
         dict[str, AdditionalInfo], merge_additional_info
     ]

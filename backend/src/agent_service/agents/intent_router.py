@@ -42,8 +42,17 @@ class IntentRouter:
         message: str,  # 用户本轮提问
         context: str,  # 历史对话上下文（上一轮工作流名字、上一轮AI回复消息）
     ) -> RouteResult | str:
+        """规则优先；其他消息异步交给模型识别。"""
+        # 0.明确的转人工请求直接处理，减少对模型的依赖。
+        normalized_message = normalize_message(message)
+        if normalized_message in HumanHandoffFlags:
+            return RouteResult(
+                intent="human_handoff",
+                reason="用户明确请求人工协助",
+            )
+
         # 1.简单寒暄优先使用规则处理
-        social_intent = match_social_intent(message)
+        social_intent = match_social_intent(normalized_message)
         if social_intent:
             response = response_by_social_intent(social_intent)
             if response is not None:
@@ -58,8 +67,7 @@ class IntentRouter:
                 ]
             )
             logger.debug("模型意图识别完成", route_result=result)
-            assert isinstance(result, RouteResult)
-            return result
+            return RouteResult.model_validate(result)
         except Exception:
             logger.exception("模型意图识别失败")
             return RouteResult(
@@ -68,8 +76,10 @@ class IntentRouter:
             )
 
 
-# 基于规则的识别是否为寒暄
+# 人工转接
+HumanHandoffFlags = {"转人工", "人工客服", "我要人工客服", "转接人工"}
 
+# 基于规则的识别是否为寒暄
 # 寒暄类型枚举
 SocialIntent = Literal["greeting", "thanks", "goodbye"]
 # 寒暄的匹配规则
@@ -112,9 +122,8 @@ def normalize_message(message: str) -> str:
 def match_social_intent(message: str) -> SocialIntent | None:
     """基于规则匹配的路由"""
 
-    normalized = normalize_message(message)
     for intent, patterns in SOCIAL_PATTERNS.items():
-        if any(re.fullmatch(pattern, normalized) for pattern in patterns):
+        if any(re.fullmatch(pattern, message) for pattern in patterns):
             return intent
     return None
 

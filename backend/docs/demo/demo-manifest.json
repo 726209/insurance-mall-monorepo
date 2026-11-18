@@ -1,0 +1,89 @@
+{
+  "recordedAt": "2026-11-18T10:59:46.326Z",
+  "baseURL": "http://localhost:5173",
+  "mode": "live",
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  },
+  "sections": [
+    {
+      "name": "01-product-catalog",
+      "title": "01 / 商城：产品分类与详情",
+      "status": "recorded",
+      "frames": 31,
+      "skippedIdleFrames": 0,
+      "asset": "docs/assets/01-product-catalog.gif"
+    },
+    {
+      "name": "02-clause-citations",
+      "title": "02 / 智能顾问：真实检索与条款引用",
+      "status": "recorded",
+      "hasCitations": true,
+      "frames": 33,
+      "skippedIdleFrames": 13,
+      "asset": "docs/assets/02-clause-citations.gif"
+    },
+    {
+      "name": "03-plan-confirmation",
+      "title": "03 / 保险方案：推荐、确认与保存",
+      "status": "recorded",
+      "hasConfirmation": true,
+      "savedReplyVisible": true,
+      "frames": 46,
+      "skippedIdleFrames": 6,
+      "asset": "docs/assets/03-plan-confirmation.gif"
+    },
+    {
+      "name": "04-claim-guidance",
+      "title": "04 / 理赔顾问：材料与报案流程指引",
+      "status": "recorded",
+      "hasReply": true,
+      "frames": 24,
+      "skippedIdleFrames": 5,
+      "asset": "docs/assets/04-claim-guidance.gif"
+    },
+    {
+      "name": "05-thread-management",
+      "title": "05 / 会话管理：新建、重命名、历史与删除",
+      "status": "recorded",
+      "deletedOwnEmptyThread": true,
+      "frames": 29,
+      "skippedIdleFrames": 3,
+      "asset": "docs/assets/05-thread-management.gif"
+    }
+  ],
+  "createdThreadIds": [
+    "af403fc4-91e2-4d66-97a5-2578520e9a38",
+    "10d87b54-c098-4afa-85ee-4de8e0a9aad0",
+    "97d9b0bd-309c-4423-b7f8-2414d35f8837",
+    "39fd393c-c0f5-43db-bacd-ffb315e34b09",
+    "d9d7f5ed-7b9b-4996-97c8-dd5ea0745991",
+    "45ff78f9-cdc3-4947-9649-f52a803cba66"
+  ],
+  "overview": {
+    "asset": "docs/assets/project-demo.gif",
+    "sections": [
+      "01-product-catalog",
+      "02-clause-citations",
+      "03-plan-confirmation",
+      "04-claim-guidance",
+      "05-thread-management"
+    ]
+  },
+  "privacy": {
+    "existingConversations": "hidden; only recording-created threads are shown",
+    "businessDataMocked": false,
+    "captionsAdded": true,
+    "unchangedWaitingFramesCompressed": true
+  },
+  "verification": {
+    "checkedAt": "2026-11-18T11:04:50.832Z",
+    "planPersistence": {
+      "method": "read-only PostgreSQL query",
+      "planName": "演示·意外保障方案",
+      "found": true,
+      "itemCount": 1
+    }
+  }
+}
